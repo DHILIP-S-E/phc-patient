@@ -5,6 +5,7 @@ import '../models/facility_models.dart';
 import '../models/ncd_tb_models.dart';
 import '../models/patient_profile.dart';
 import '../models/pregnancy_models.dart';
+import '../models/scheme_models.dart';
 import '../models/visit_models.dart';
 
 /// Wraps the authenticated patient-portal read surface —
@@ -106,6 +107,15 @@ class PatientPortalRepository {
       (json) => (json as List<dynamic>)
           .map((e) => NotificationItem.fromJson(e as Map<String, dynamic>))
           .toList(),
+    );
+  }
+
+  /// GET /patients/me/schemes.
+  Future<List<SchemeItem>> getSchemes() {
+    return _client.unwrap(
+      () => _client.dio.get('/patients/me/schemes'),
+      (json) =>
+          (json as List<dynamic>).map((e) => SchemeItem.fromJson(e as Map<String, dynamic>)).toList(),
     );
   }
 

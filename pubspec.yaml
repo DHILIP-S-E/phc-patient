@@ -44,6 +44,13 @@ dependencies:
   freezed_annotation: ^3.1.0
   json_annotation: ^4.12.0
 
+  # Gemini Live citizen assistant: WS transport, PCM mic capture/streaming
+  # playback (one package for both, to keep native-plugin surface to a
+  # minimum), runtime mic permission.
+  web_socket_channel: ^3.0.1
+  flutter_sound: ^9.28.0
+  permission_handler: ^11.3.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -4,8 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../components/app_icon.dart';
 import '../../state/profile_provider.dart';
 import '../../theme/app_theme.dart';
+import '../assistant/live_assistant_screen.dart';
 import '../emergency_screen.dart';
 import '../health_records_screen.dart';
+import '../health_schemes_screen.dart';
 import '../queue_screen.dart';
 import 'child_dashboard.dart';
 import 'general_adult_dashboard.dart';
@@ -33,6 +35,8 @@ class _AdaptiveDashboardShellState extends ConsumerState<AdaptiveDashboardShell>
     _NavItem(iconName: 'stethoscope', fallback: Icons.folder_shared_outlined, label: 'Records'),
     _NavItem(iconName: 'calendar', fallback: Icons.confirmation_number_outlined, label: 'Queue'),
     _NavItem(iconName: 'heart', fallback: Icons.emergency_outlined, label: 'Emergency'),
+    _NavItem(iconName: 'microphone', fallback: Icons.mic_none_outlined, label: 'Assistant'),
+    _NavItem(iconName: 'shield', fallback: Icons.verified_outlined, label: 'Schemes'),
   ];
 
   @override
@@ -42,6 +46,8 @@ class _AdaptiveDashboardShellState extends ConsumerState<AdaptiveDashboardShell>
       const HealthRecordsScreen(),
       const QueueScreen(),
       const EmergencyScreen(),
+      const LiveAssistantScreen(),
+      const HealthSchemesScreen(),
     ];
 
     return Scaffold(
