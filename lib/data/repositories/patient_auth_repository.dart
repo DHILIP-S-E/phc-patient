@@ -10,18 +10,29 @@ class PatientAuthRepository {
   PatientAuthRepository(this._client);
 
   /// POST /patients/auth/request-otp — always returns `data: null` on
-  /// success (see `schemas/patient_auth.py` — no response schema).
-  Future<void> requestOtp(String mobile) {
+  /// success (see `schemas/patient_auth.py` — no response schema). [email]
+  /// is optional dual-channel delivery — if set, the OTP is also emailed in
+  /// parallel with the WhatsApp/SMS send.
+  Future<void> requestOtp(String mobile, {String? email}) {
     return _client.unwrap(
-      () => _client.dio.post('/patients/auth/request-otp', data: {'mobile': mobile}),
+      () => _client.dio.post(
+        '/patients/auth/request-otp',
+        data: {'mobile': mobile, if (email != null && email.isNotEmpty) 'email': email},
+      ),
       (_) {},
     );
   }
 
-  /// POST /patients/auth/verify-otp.
-  Future<VerifyOtpResult> verifyOtp(String mobile, String otp) {
+  /// POST /patients/auth/verify-otp. Exactly one of [mobile]/[email] should
+  /// be non-null — mirrors the backend's "exactly one identifier" contract.
+  /// This app always verifies via [mobile] today (the identifier collected
+  /// on [MobileEntryScreen]); [email] exists for forward-compatibility.
+  Future<VerifyOtpResult> verifyOtp(String otp, {String? mobile, String? email}) {
     return _client.unwrap(
-      () => _client.dio.post('/patients/auth/verify-otp', data: {'mobile': mobile, 'otp': otp}),
+      () => _client.dio.post(
+        '/patients/auth/verify-otp',
+        data: {'otp': otp, if (mobile != null) 'mobile': mobile, if (email != null) 'email': email},
+      ),
       (json) => VerifyOtpResult.fromJson(json as Map<String, dynamic>),
     );
   }
@@ -29,12 +40,14 @@ class PatientAuthRepository {
   /// POST /patients/auth/register — completes the "register" branch of
   /// verify-otp (no matching patient found for the verified phone number).
   /// [dob] is an ISO `yyyy-MM-dd` string, matching the backend's `date` field.
+  /// [email] is optional, persisted onto the new `Patient.email` column.
   Future<AuthTokenResult> register(
     String verifiedPhoneToken,
     String name,
     String? dob,
-    String? gender,
-  ) {
+    String? gender, {
+    String? email,
+  }) {
     return _client.unwrap(
       () => _client.dio.post(
         '/patients/auth/register',
@@ -43,6 +56,7 @@ class PatientAuthRepository {
           'name': name,
           'dob': dob,
           'gender': gender,
+          'email': email,
         },
       ),
       (json) => AuthTokenResult.fromJson(json as Map<String, dynamic>),

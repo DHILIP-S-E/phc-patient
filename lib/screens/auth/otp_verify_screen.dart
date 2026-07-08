@@ -15,9 +15,10 @@ import '../../theme/app_theme.dart';
 /// wires real go_router routes once those screens exist.
 class OtpVerifyScreen extends ConsumerStatefulWidget {
   final String mobile;
+  final String? email;
   final VoidCallback? onSuccess;
 
-  const OtpVerifyScreen({super.key, required this.mobile, this.onSuccess});
+  const OtpVerifyScreen({super.key, required this.mobile, this.email, this.onSuccess});
 
   @override
   ConsumerState<OtpVerifyScreen> createState() => _OtpVerifyScreenState();
@@ -84,7 +85,7 @@ class _OtpVerifyScreenState extends ConsumerState<OtpVerifyScreen> {
       _errorText = null;
     });
     try {
-      await ref.read(authProvider.notifier).requestOtp(widget.mobile);
+      await ref.read(authProvider.notifier).requestOtp(widget.mobile, email: widget.email);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('OTP resent')),
@@ -150,7 +151,9 @@ class _OtpVerifyScreenState extends ConsumerState<OtpVerifyScreen> {
           Text('Verify OTP', style: AppText.display(size: 26)),
           const SizedBox(height: 8),
           Text(
-            'Enter the code sent to ${widget.mobile}',
+            widget.email != null
+                ? 'Enter the code sent to ${widget.mobile} and ${widget.email}'
+                : 'Enter the code sent to ${widget.mobile}',
             textAlign: TextAlign.center,
             style: AppText.body,
           ),

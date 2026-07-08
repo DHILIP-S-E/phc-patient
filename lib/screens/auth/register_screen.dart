@@ -27,6 +27,7 @@ class RegisterScreen extends ConsumerStatefulWidget {
 class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
 
   DateTime? _dob;
   String? _gender;
@@ -42,6 +43,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   @override
   void dispose() {
     _nameController.dispose();
+    _emailController.dispose();
     super.dispose();
   }
 
@@ -63,10 +65,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       _error = null;
     });
     try {
+      final email = _emailController.text.trim();
       await ref.read(authProvider.notifier).register(
         name: _nameController.text.trim(),
         dob: _dob == null ? null : _isoDate(_dob!),
         gender: _gender,
+        email: email.isEmpty ? null : email,
       );
     } catch (e) {
       if (!mounted) return;
@@ -128,6 +132,22 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   textCapitalization: TextCapitalization.words,
                   decoration: _inputDecoration(hint: 'Enter your full name', icon: Icons.person_outline),
                   validator: (value) => (value == null || value.trim().isEmpty) ? 'Name is required' : null,
+                ),
+                const SizedBox(height: 18),
+                Text('Email (optional)', style: AppText.sectionTitle()),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: _inputDecoration(hint: 'you@example.com', icon: Icons.email_outlined),
+                  validator: (value) {
+                    final v = value?.trim() ?? '';
+                    if (v.isEmpty) return null;
+                    if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(v)) {
+                      return 'Enter a valid email address';
+                    }
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 18),
                 Text('Date of birth', style: AppText.sectionTitle()),

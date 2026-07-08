@@ -21,12 +21,14 @@ class MobileEntryScreen extends ConsumerStatefulWidget {
 class _MobileEntryScreenState extends ConsumerState<MobileEntryScreen> {
   final _formKey = GlobalKey<FormState>();
   final _mobileController = TextEditingController();
+  final _emailController = TextEditingController();
   bool _isSubmitting = false;
   String? _errorText;
 
   @override
   void dispose() {
     _mobileController.dispose();
+    _emailController.dispose();
     super.dispose();
   }
 
@@ -39,11 +41,14 @@ class _MobileEntryScreenState extends ConsumerState<MobileEntryScreen> {
     });
 
     final mobile = _mobileController.text.trim();
+    final email = _emailController.text.trim();
     try {
-      await ref.read(authProvider.notifier).requestOtp(mobile);
+      await ref.read(authProvider.notifier).requestOtp(mobile, email: email.isEmpty ? null : email);
       if (!mounted) return;
       Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => OtpVerifyScreen(mobile: mobile)),
+        MaterialPageRoute(
+          builder: (_) => OtpVerifyScreen(mobile: mobile, email: email.isEmpty ? null : email),
+        ),
       );
     } on ApiException catch (e) {
       setState(() => _errorText = e.message);
@@ -112,6 +117,36 @@ class _MobileEntryScreenState extends ConsumerState<MobileEntryScreen> {
                       if (v.isEmpty) return 'Mobile number is required';
                       if (!RegExp(r'^[0-9]{10}$').hasMatch(v)) {
                         return 'Enter a valid 10-digit mobile number';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text('Email (optional)', style: AppText.sectionTitle()),
+                  ),
+                  const SizedBox(height: 10),
+                  TextFormField(
+                    controller: _emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    style: const TextStyle(fontSize: 16, color: AppColors.ink),
+                    decoration: InputDecoration(
+                      hintText: 'you@example.com',
+                      hintStyle: const TextStyle(color: AppColors.muted, fontSize: 14),
+                      filled: true,
+                      fillColor: Colors.white,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                    validator: (value) {
+                      final v = value?.trim() ?? '';
+                      if (v.isEmpty) return null;
+                      if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(v)) {
+                        return 'Enter a valid email address';
                       }
                       return null;
                     },

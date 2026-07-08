@@ -48,10 +48,12 @@ class AuthCheckingSession extends AuthState {
   const AuthCheckingSession();
 }
 
-/// OTP requested for [mobile]; awaiting the code from the user.
+/// OTP requested for [mobile]; awaiting the code from the user. [email] is
+/// set when the OTP was also dispatched to that address in parallel.
 class AuthOtpSent extends AuthState {
   final String mobile;
-  const AuthOtpSent(this.mobile);
+  final String? email;
+  const AuthOtpSent(this.mobile, {this.email});
 }
 
 /// Phone verified and it matches more than one patient record — the user
@@ -105,16 +107,17 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
-  /// POST /patients/auth/request-otp, then move to [AuthOtpSent].
-  Future<void> requestOtp(String mobile) async {
-    await ref.read(patientAuthRepositoryProvider).requestOtp(mobile);
-    state = AuthOtpSent(mobile);
+  /// POST /patients/auth/request-otp, then move to [AuthOtpSent]. [email] is
+  /// optional dual-channel delivery — if set, the OTP is also emailed.
+  Future<void> requestOtp(String mobile, {String? email}) async {
+    await ref.read(patientAuthRepositoryProvider).requestOtp(mobile, email: email);
+    state = AuthOtpSent(mobile, email: email);
   }
 
   /// POST /patients/auth/verify-otp, then branch into whichever next state
   /// the backend reports (`logged_in` / `select_patient` / `register`).
   Future<void> verifyOtp(String mobile, String otp) async {
-    final result = await ref.read(patientAuthRepositoryProvider).verifyOtp(mobile, otp);
+    final result = await ref.read(patientAuthRepositoryProvider).verifyOtp(otp, mobile: mobile);
     switch (result.status) {
       case 'logged_in':
         await _completeLogin(result.accessToken!);
@@ -128,12 +131,12 @@ class AuthNotifier extends Notifier<AuthState> {
   }
 
   /// POST /patients/auth/register. Only valid from [AuthVerifiedNeedsRegistration].
-  Future<void> register({required String name, String? dob, String? gender}) async {
+  Future<void> register({required String name, String? dob, String? gender, String? email}) async {
     final current = state;
     if (current is! AuthVerifiedNeedsRegistration) return;
     final result = await ref
         .read(patientAuthRepositoryProvider)
-        .register(current.verifiedPhoneToken, name, dob, gender);
+        .register(current.verifiedPhoneToken, name, dob, gender, email: email);
     await _completeLogin(result.accessToken, patientId: result.patientId);
   }
 
