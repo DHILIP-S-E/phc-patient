@@ -1,0 +1,102 @@
+name: phc_ai_assistant
+description: PHC AI Assistant - Offline AI Healthcare Voice Assistant for Indian Primary Healthcare Centres (PHCs)
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # State Management
+  flutter_bloc: ^8.1.6
+  bloc: ^8.1.4
+  equatable: ^2.0.5
+
+  # Dependency Injection
+  get_it: ^7.7.0
+
+  # Navigation
+  go_router: ^14.3.0
+
+  # Network / Download
+  dio: ^5.7.0
+  connectivity_plus: ^6.1.1
+
+  # Local Storage
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  shared_preferences: ^2.3.3
+  flutter_secure_storage: ^9.2.2
+  path_provider: ^2.1.5
+
+  # Crypto / Verification
+  crypto: ^3.0.5
+
+  # Voice / Speech
+  speech_to_text: ^7.0.0
+  flutter_tts: ^4.2.0
+  permission_handler: ^11.3.1
+
+  # Audio visualization
+  audio_waveforms: ^1.3.0
+
+  # Avatar & Animations
+  rive: ^0.13.16
+  lottie: ^3.1.3
+
+  # UI / Fonts
+  google_fonts: ^6.2.1
+  flutter_svg: ^2.0.10+1
+  cached_network_image: ^3.4.1
+  shimmer: ^3.0.0
+  animations: ^2.0.11
+
+  # FFI for native llama.cpp bridge
+  ffi: ^2.1.3
+
+  # Functional programming
+  dartz: ^0.10.1
+
+  # Logging
+  logger: ^2.5.0
+
+  # Device info
+  device_info_plus: ^11.2.0
+  package_info_plus: ^8.1.4
+
+  # Intl (pinned to match flutter_localizations SDK requirement)
+  intl: ^0.20.0
+  record: ^6.2.1
+  whisper_ggml: ^1.7.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  mocktail: ^1.0.4
+  bloc_test: ^9.1.7
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/models/placeholder/
+
+  # NOTE: fonts and image/animation assets were declared but the files were
+  # never added, which failed the build. Re-add them here once you drop the
+  # real files in. For Indian-script rendering (Tamil/Hindi/etc.) add the
+  # NotoSans .ttf files to assets/fonts/ and restore the `fonts:` block below.
+  #
+  # fonts:
+  #   - family: NotoSans
+  #     fonts:
+  #       - asset: assets/fonts/NotoSans-Regular.ttf
+  #       - asset: assets/fonts/NotoSans-Bold.ttf
+  #         weight: 700
+  #       - asset: assets/fonts/NotoSans-SemiBold.ttf
+  #         weight: 600

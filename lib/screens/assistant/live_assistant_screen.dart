@@ -1,8 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../features/offline_assistant/presentation/offline_assistant_screen.dart';
 import '../../state/live_assistant_provider.dart';
 import '../../theme/app_theme.dart';
+
+enum _AssistantMode { online, offline }
 
 /// Full-duplex Gemini Live citizen assistant tab. One button starts/stops
 /// continuous listening (not push-to-talk — the mic stays open the whole
@@ -19,6 +24,15 @@ class LiveAssistantScreen extends ConsumerStatefulWidget {
 class _LiveAssistantScreenState extends ConsumerState<LiveAssistantScreen> {
   final List<String> _transcriptLog = [];
   String? _lastLogged;
+  _AssistantMode _mode = _AssistantMode.online;
+
+  Future<void> _switchToOffline() async {
+    setState(() => _mode = _AssistantMode.offline);
+    await Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const OfflineAssistantScreen()),
+    );
+    if (mounted) setState(() => _mode = _AssistantMode.online);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +64,16 @@ class _LiveAssistantScreenState extends ConsumerState<LiveAssistantScreen> {
                 textAlign: TextAlign.center,
                 style: AppText.body,
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
+              _ModeToggle(
+                mode: _mode,
+                onSelect: (mode) {
+                  if (mode == _AssistantMode.offline) {
+                    unawaited(_switchToOffline());
+                  }
+                },
+              ),
+              const SizedBox(height: 12),
               _StatusPill(state: assistantState),
               const SizedBox(height: 20),
               Expanded(
@@ -134,6 +157,55 @@ class _StatusPill extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(20)),
       child: Text(label, style: TextStyle(color: color, fontWeight: FontWeight.w600, fontSize: 13)),
+    );
+  }
+}
+
+/// Switches between the Gemini Live (online) assistant on this tab and the
+/// on-device Gemma/llama.cpp assistant (offline), which opens full-screen —
+/// its UI was built assuming it owns the whole screen (MediaQuery-driven
+/// avatar sizing, bottom sheets, its own dark theme), not a tab sub-area.
+class _ModeToggle extends StatelessWidget {
+  final _AssistantMode mode;
+  final ValueChanged<_AssistantMode> onSelect;
+
+  const _ModeToggle({required this.mode, required this.onSelect});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(color: AppColors.canvas, borderRadius: BorderRadius.circular(100)),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _segment(context, 'Online', _AssistantMode.online),
+          _segment(context, 'Offline', _AssistantMode.offline),
+        ],
+      ),
+    );
+  }
+
+  Widget _segment(BuildContext context, String label, _AssistantMode value) {
+    final isSelected = mode == value;
+    return GestureDetector(
+      onTap: () => onSelect(value),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.cta : Colors.transparent,
+          borderRadius: BorderRadius.circular(100),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : AppColors.muted,
+            fontWeight: FontWeight.w600,
+            fontSize: 13,
+          ),
+        ),
+      ),
     );
   }
 }
